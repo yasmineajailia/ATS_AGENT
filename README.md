@@ -230,9 +230,6 @@ pipeline = ATSPipeline(use_spacy=False)
 - [ ] Integration with job boards APIs
 - [ ] Machine learning-based scoring
 
-## License
-
-This project is open source and available for educational and commercial use.
 
 ## Contributing
 
