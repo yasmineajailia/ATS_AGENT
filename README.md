@@ -1,12 +1,25 @@
-# ATS Resume Analyzer
+# AT## Features
+
+- 📄 **PDF Text Extraction**: Extract text from PDF resumes
+- 🔍 **CV Format Detection**: Analyze resume structure, sections, and ATS compatibility
+- 🤖 **ATS-Friendliness Score**: Get a score (0-100) on how ATS-optimized your resume is
+- 📋 **Section Extraction**: Extract structured content from Experience, Education, Skills, etc.
+- 🌍 **Language Detection**: Automatically detect languages and proficiency levels
+- 🔑 **Keyword Extraction**: Extract keywords using TF-IDF and spaCy NLP
+- 🎯 **Technical Skills Detection**: Identify 200+ skills including programming, operations, analytics
+- 📊 **Similarity Scoring**: Multiple similarity metrics (Jaccard, Cosine, Weighted)
+- 💡 **Smart Recommendations**: Get actionable advice to improve resume match
+- 📈 **Detailed Analysis**: Comprehensive reporting with matched/missing skillsnalyzer
 
 A comprehensive pipeline for analyzing resume-job description similarity using NLP techniques and keyword extraction.
 
 ## Features
 
 - 📄 **PDF Text Extraction**: Extract text from PDF resumes
-- 🔑 **Keyword Extraction**: Extract keywords using TF-IDF and spaCy NLP
-- 🎯 **Technical Skills Detection**: Identify programming languages, frameworks, and tools
+- � **CV Format Detection**: Analyze resume structure, sections, and ATS compatibility
+- 🤖 **ATS-Friendliness Score**: Get a score (0-100) on how ATS-optimized your resume is
+- �🔑 **Keyword Extraction**: Extract keywords using TF-IDF and spaCy NLP
+- 🎯 **Technical Skills Detection**: Identify 200+ skills including programming, operations, analytics
 - 📊 **Similarity Scoring**: Multiple similarity metrics (Jaccard, Cosine, Weighted)
 - 💡 **Smart Recommendations**: Get actionable advice to improve resume match
 - 📈 **Detailed Analysis**: Comprehensive reporting with matched/missing skills
@@ -43,9 +56,27 @@ Then open your browser and:
 
 ### 💻 Command Line Usage
 
+**Full Analysis (Resume + Job Match):**
 ```bash
 python ats_pipeline.py "resume.pdf" "job_description.txt"
 ```
+
+**CV Format Analysis Only:**
+```bash
+python cv_format_analyzer.py "resume.pdf"
+```
+
+**Extract Resume Sections:**
+```bash
+python section_extractor.py "resume.pdf"
+```
+This extracts structured content from each section (Experience, Skills, Education, etc.)
+
+**Extract Languages:**
+```bash
+python language_extractor.py "resume.pdf"
+```
+This extracts language information including proficiency levels
 
 **Note:** In PowerShell, use quotes around paths with special characters:
 ```powershell
@@ -87,20 +118,32 @@ if results['success']:
 
 ```
 ATS-agent/
-├── app.py                    # 🌐 Web interface (Streamlit)
-├── ats_pipeline.py           # Main pipeline orchestrator
-├── pdf_extractor.py          # PDF text extraction module
-├── keyword_extractor.py      # Keyword extraction using NLP
-├── similarity_calculator.py  # Similarity scoring algorithms
-├── example.py                # Usage examples
-├── requirements.txt          # Python dependencies
-└── README.md                 # This file
+├── app.py                     # 🌐 Web interface (Streamlit)
+├── ats_pipeline.py            # Main pipeline orchestrator
+├── cv_format_analyzer.py      # 🔍 CV format detection tool
+├── section_extractor.py       # 📄 Resume section extraction tool
+├── language_extractor.py      # 🌍 Language detection tool
+├── pdf_extractor.py           # PDF text extraction + format analysis
+├── keyword_extractor.py       # Keyword extraction using NLP
+├── similarity_calculator.py   # Similarity scoring algorithms
+├── example.py                 # Usage examples
+├── requirements.txt           # Python dependencies
+└── README.md                  # This file
 ```
 
 ## Components
 
 ### 1. PDF Extractor (`pdf_extractor.py`)
 Extracts text content from PDF resumes using PyPDF2.
+
+**Format Detection & Section Extraction:**
+- Detects CV structure and sections (Experience, Education, Skills, etc.)
+- **NEW: Extracts actual content from each section** into structured data
+- Identifies contact information (email, phone, LinkedIn, GitHub)
+- Analyzes formatting quality (bullets, dates, line lengths)
+- Calculates ATS-Friendliness Score (0-100)
+- Provides specific recommendations for improvement
+- Exports sections as JSON for further processing
 
 ### 2. Keyword Extractor (`keyword_extractor.py`)
 - **TF-IDF**: Identifies important terms using statistical analysis

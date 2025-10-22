@@ -33,7 +33,7 @@ class ATSPipeline:
         self.similarity_calculator = SimilarityCalculator()
     
     def analyze(self, resume_pdf_path: str, job_description: str, 
-                verbose: bool = True) -> Dict:
+                verbose: bool = True, analyze_format: bool = True) -> Dict:
         """
         Analyze resume against job description
         
@@ -41,12 +41,28 @@ class ATSPipeline:
             resume_pdf_path: Path to the resume PDF file
             job_description: Job description text
             verbose: Whether to print progress messages
+            analyze_format: Whether to analyze CV format and structure
             
         Returns:
             Dictionary containing complete analysis results
         """
         if verbose:
             print("🔍 Starting ATS Analysis...")
+        
+        # Step 0: Analyze PDF format (if requested)
+        format_analysis = None
+        if analyze_format:
+            if verbose:
+                print("📋 Analyzing CV format and structure...")
+            
+            format_analysis = self.pdf_extractor.analyze_pdf(resume_pdf_path)
+            
+            if format_analysis and format_analysis.get('success'):
+                if verbose:
+                    structure = format_analysis['structure_analysis']
+                    print(f"   ✓ CV Format: {structure['cv_format']}")
+                    print(f"   ✓ Sections Detected: {structure['section_count']}")
+                    print(f"   ✓ ATS Score: {structure['ats_friendly_score']}/100 - {structure['ats_friendly_rating']}")
         
         # Step 1: Extract text from resume PDF
         if verbose:
@@ -57,12 +73,14 @@ class ATSPipeline:
             if not resume_text:
                 return {
                     'error': 'Failed to extract text from resume PDF',
-                    'success': False
+                    'success': False,
+                    'format_analysis': format_analysis
                 }
         except Exception as e:
             return {
                 'error': f'Error reading PDF: {str(e)}',
-                'success': False
+                'success': False,
+                'format_analysis': format_analysis
             }
         
         if verbose:
@@ -109,6 +127,7 @@ class ATSPipeline:
         # Compile complete results
         results = {
             'success': True,
+            'format_analysis': format_analysis,
             'resume_analysis': {
                 'text_length': len(resume_text),
                 'keywords': resume_keywords,
