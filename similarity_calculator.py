@@ -123,26 +123,37 @@ class SimilarityCalculator:
             job_keywords.get('tfidf_keywords', [])
         )
         
-        # Weighted scoring
-        # Technical skills: 40%, TF-IDF keywords: 30%, Overall text: 20%, All keywords: 10%
-        weighted_score = (
-            skills_overlap['match_rate'] * 0.40 +
-            tfidf_overlap['match_rate'] * 0.30 +
-            text_similarity * 0.20 +
-            all_kw_overlap['match_rate'] * 0.10
-        )
+        # Weighted scoring (optimized for skills-based matching)
+        # If TF-IDF matching fails (returns 0 keywords), redistribute its weight to skills
+        has_tfidf = len(resume_keywords.get('tfidf_keywords', [])) > 0 and len(job_keywords.get('tfidf_keywords', [])) > 0
+        
+        if has_tfidf:
+            # Normal weights: Skills 50%, TF-IDF 25%, All keywords 15%, Text 10%
+            weighted_score = (
+                skills_overlap['match_rate'] * 0.50 +
+                tfidf_overlap['match_rate'] * 0.25 +
+                all_kw_overlap['match_rate'] * 0.15 +
+                text_similarity * 0.10
+            )
+        else:
+            # TF-IDF failed, redistribute: Skills 60%, All keywords 30%, Text 10%
+            weighted_score = (
+                skills_overlap['match_rate'] * 0.60 +
+                all_kw_overlap['match_rate'] * 0.30 +
+                text_similarity * 0.10
+            )
         
         # Calculate overall percentage
         overall_percentage = round(weighted_score * 100, 2)
         
-        # Determine match level
-        if overall_percentage >= 75:
+        # Determine match level (adjusted for skills-focused matching)
+        if overall_percentage >= 80:
             match_level = "Excellent Match"
-        elif overall_percentage >= 60:
+        elif overall_percentage >= 65:
             match_level = "Good Match"
-        elif overall_percentage >= 45:
+        elif overall_percentage >= 50:
             match_level = "Moderate Match"
-        elif overall_percentage >= 30:
+        elif overall_percentage >= 35:
             match_level = "Low Match"
         else:
             match_level = "Poor Match"
