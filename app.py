@@ -65,7 +65,7 @@ def main():
     with col3:
         if use_llm:
             gemini_api_key = st.text_input("Gemini API Key", type="password",
-                                          value="AIzaSyC9N9vfyxPibpmR3ZgqQTW_W-dyqMbe-vI")
+                                          value="")
     
     # Analyze button
     if st.button("🔍 Analyze Resume", type="primary", use_container_width=True):
