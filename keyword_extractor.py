@@ -25,11 +25,16 @@ class KeywordExtractor:
         
         if use_spacy:
             try:
-                # Load English language model
-                self.nlp = spacy.load("en_core_web_sm")
+                # Try to load the medium model first (better for entity recognition)
+                self.nlp = spacy.load("en_core_web_md")
+                print("✓ Loaded spaCy model: en_core_web_md")
             except OSError:
-                print("Warning: spaCy model 'en_core_web_sm' not found. Run: python -m spacy download en_core_web_sm")
-                self.use_spacy = False
+                try:
+                    self.nlp = spacy.load("en_core_web_sm")
+                    print("✓ Loaded spaCy model: en_core_web_sm")
+                except OSError:
+                    print("⚠️ Warning: spaCy model not found. Install with: python -m spacy download en_core_web_md")
+                    self.use_spacy = False
     
     def preprocess_text(self, text: str) -> str:
         """
@@ -262,3 +267,86 @@ class KeywordExtractor:
         result['all_keywords'] = list(all_keywords)
         
         return result
+    
+    def extract_cv_entities(self, text: str) -> Dict:
+        """
+        Extract structured CV information using enhanced NLP
+        Similar to en_cv_info_extr functionality
+        
+        Args:
+            text: Resume text
+            
+        Returns:
+            Dictionary with extracted CV entities
+        """
+        if not self.nlp:
+            return {}
+        
+        doc = self.nlp(text)
+        
+        # Extract entities
+        entities = {
+            'skills': [],
+            'education': [],
+            'experience_years': [],
+            'organizations': [],
+            'locations': [],
+            'certifications': [],
+            'tools': [],
+            'languages': [],
+            'dates': []
+        }
+        
+        # Extract named entities
+        for ent in doc.ents:
+            if ent.label_ == 'ORG':
+                entities['organizations'].append(ent.text)
+            elif ent.label_ == 'GPE' or ent.label_ == 'LOC':
+                entities['locations'].append(ent.text)
+            elif ent.label_ == 'DATE':
+                entities['dates'].append(ent.text)
+        
+        # Extract technical skills using our comprehensive database
+        entities['skills'] = list(self.extract_technical_skills(text))
+        
+        # Extract education keywords
+        education_keywords = [
+            'bachelor', 'master', 'phd', 'doctorate', 'associate', 'diploma',
+            'degree', 'university', 'college', 'institute', 'school',
+            'bs', 'ba', 'ms', 'ma', 'mba', 'bsc', 'msc', 'beng', 'meng'
+        ]
+        text_lower = text.lower()
+        for keyword in education_keywords:
+            if keyword in text_lower:
+                # Find context around the keyword
+                import re
+                pattern = rf'([^\n.]*{keyword}[^\n.]*)'
+                matches = re.findall(pattern, text_lower, re.IGNORECASE)
+                entities['education'].extend(matches[:3])  # Limit to top 3
+        
+        # Extract certification keywords
+        cert_keywords = [
+            'certified', 'certification', 'certificate', 'licensed', 'license',
+            'aws', 'azure', 'google cloud', 'pmp', 'cissp', 'comptia', 'itil',
+            'scrum master', 'csm', 'cpa', 'cfa', 'phr', 'sphr'
+        ]
+        for keyword in cert_keywords:
+            if keyword in text_lower:
+                pattern = rf'([^\n.]*{keyword}[^\n.]*)'
+                matches = re.findall(pattern, text_lower, re.IGNORECASE)
+                entities['certifications'].extend(matches[:3])
+        
+        # Extract years of experience
+        # Look for patterns like "5 years", "5+ years", "5-7 years"
+        exp_pattern = r'(\d+)[\+\-\s]*(?:to|-)?\s*(\d+)?\s*(?:years?|yrs?)'
+        exp_matches = re.findall(exp_pattern, text_lower)
+        for match in exp_matches:
+            if match[0]:
+                entities['experience_years'].append(match[0])
+        
+        # Remove duplicates
+        for key in entities:
+            if isinstance(entities[key], list):
+                entities[key] = list(set(entities[key]))
+        
+        return entities
