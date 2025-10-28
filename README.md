@@ -244,44 +244,9 @@ weighted_score = (
 )
 ```
 
-### Add More Technical Skills
-
-Edit the `skills_database` set in `keyword_extractor.py` to add more skills to detect.
-
-### Disable spaCy
-
-For faster processing without advanced NLP:
-
-```python
-pipeline = ATSPipeline(use_spacy=False)
-```
-
-## Limitations
-
-- PDF extraction quality depends on PDF format/quality
-- Technical skills database is predefined (can be extended)
-- Works best with English text
-- Requires clear, well-structured resumes and job descriptions
-
-## Future Enhancements
-
-- [ ] Support for Word documents (.docx)
-- [ ] Multi-language support
-- [ ] Web interface
-- [ ] Resume optimization suggestions
-- [ ] Batch processing for multiple resumes
-- [ ] Integration with job boards APIs
-- [ ] Machine learning-based scoring
 
 
-## Contributing
 
-Contributions are welcome! Feel free to submit issues or pull requests.
 
-## Support
 
-For questions or issues, please open an issue in the repository.
 
----
-
-**Happy Job Hunting! 🚀**

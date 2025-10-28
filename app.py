@@ -10,6 +10,7 @@ from pdf_extractor import PDFExtractor
 from ats_pipeline import ATSPipeline
 from rag_skills_extractor import RAGSkillsExtractor
 from llm_extractor import LLMResumeExtractor
+from job_role_predictor import JobRolePredictor
 import json
 
 # Page config
@@ -28,9 +29,14 @@ def init_components():
         skills_csv_path="data/skills_exploded (2).csv",
         max_skills=10000
     )
-    return pdf_extractor, ats_pipeline, rag_extractor
+    try:
+        job_predictor = JobRolePredictor()
+    except Exception as e:
+        st.warning(f"Job predictor not available: {e}")
+        job_predictor = None
+    return pdf_extractor, ats_pipeline, rag_extractor, job_predictor
 
-pdf_extractor, ats_pipeline, rag_extractor = init_components()
+pdf_extractor, ats_pipeline, rag_extractor, job_predictor = init_components()
 
 # Main app
 def main():
@@ -127,14 +133,14 @@ def main():
                     llm_analysis = llm_extractor.extract_from_text(resume_text)
                 
                 # Display results
-                display_results(ats_results, rag_skills, llm_analysis, resume_text)
+                display_results(ats_results, rag_skills, llm_analysis, resume_text, job_predictor)
                 
         finally:
             # Cleanup
             if os.path.exists(resume_path):
                 os.unlink(resume_path)
 
-def display_results(ats_results, rag_skills, llm_analysis, resume_text):
+def display_results(ats_results, rag_skills, llm_analysis, resume_text, job_predictor=None):
     """Display analysis results"""
     
     st.markdown("---")
@@ -143,6 +149,15 @@ def display_results(ats_results, rag_skills, llm_analysis, resume_text):
     # Overall Score
     overall_match = ats_results['similarity_scores']['overall_percentage']
     skills_match = ats_results['similarity_scores']['detailed_scores']['skills_match_rate'] * 100
+    
+    # Job prediction (if available)
+    job_prediction = None
+    if job_predictor and rag_skills:
+        try:
+            skills_text = ' '.join(rag_skills)
+            job_prediction = job_predictor.predict_job_role(skills_text, top_n=5)
+        except Exception as e:
+            st.warning(f"Job prediction failed: {e}")
     
     # Big score display
     col1, col2, col3 = st.columns(3)
@@ -161,15 +176,31 @@ def display_results(ats_results, rag_skills, llm_analysis, resume_text):
             st.metric("Skills Detected (RAG)", len(rag_skills))
         if llm_analysis:
             st.metric("Experience", f"{llm_analysis.get('total_experience_years', 0)} years")
+        if job_prediction:
+            st.metric("Predicted Role", job_prediction['predicted_role'].replace(' ', '\n'), 
+                     delta=f"{job_prediction['confidence']:.0%} confidence")
     
     # Detailed Analysis Tabs
-    tab1, tab2, tab3, tab4, tab5 = st.tabs([
+    tabs = [
         "🎯 Skills Analysis", 
         "📈 Scoring Breakdown",
         "🔍 RAG Skills",
         "🤖 LLM Analysis",
         "📄 Resume Format"
-    ])
+    ]
+    
+    if job_prediction:
+        tabs.append("💼 Job Prediction")
+    
+    tab_objects = st.tabs(tabs)
+    
+    # Unpack tabs dynamically
+    tab1 = tab_objects[0]
+    tab2 = tab_objects[1]
+    tab3 = tab_objects[2]
+    tab4 = tab_objects[3]
+    tab5 = tab_objects[4]
+    tab6 = tab_objects[5] if len(tab_objects) > 5 else None
     
     with tab1:
         st.subheader("Skills Analysis")
@@ -355,6 +386,33 @@ if TF-IDF extraction fails.
             st.warning("**Quality Issues:**")
             for issue in format_info['quality_issues']:
                 st.markdown(f"⚠️ {issue}")
+    
+    if tab6 and job_prediction:
+        with tab6:
+            st.subheader("AI Job Role Prediction")
+            st.info("Based on your skills, our AI model predicts the following job roles:")
+            
+            # Main prediction
+            st.markdown(f"### 🎯 Best Match: **{job_prediction['predicted_role']}**")
+            st.progress(job_prediction['confidence'], text=f"Confidence: {job_prediction['confidence']:.1%}")
+            
+            # Top 5 predictions
+            st.markdown("### 📊 Top 5 Predicted Roles:")
+            for i, (role, prob) in enumerate(job_prediction['top_predictions'], 1):
+                col1, col2 = st.columns([3, 1])
+                with col1:
+                    st.markdown(f"**{i}. {role}**")
+                with col2:
+                    st.markdown(f"{prob:.1%}")
+                st.progress(prob, text="")
+            
+            # All probabilities chart
+            st.markdown("### 📈 All Role Probabilities:")
+            all_probs = job_prediction['all_probabilities']
+            sorted_roles = sorted(all_probs.items(), key=lambda x: x[1], reverse=True)
+            
+            for role, prob in sorted_roles:
+                st.progress(prob, text=f"{role}: {prob:.1%}")
 
 def get_match_level(score):
     """Get match level text"""
