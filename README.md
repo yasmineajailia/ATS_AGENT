@@ -229,20 +229,7 @@ python example.py
 - scikit-learn: TF-IDF and similarity calculations
 - numpy: Numerical computations
 
-## Customization
 
-### Adjust Scoring Weights
-
-Edit `similarity_calculator.py` to change the weighted scoring formula:
-
-```python
-weighted_score = (
-    skills_overlap['match_rate'] * 0.40 +  # Technical skills weight
-    tfidf_overlap['match_rate'] * 0.30 +   # Keywords weight
-    text_similarity * 0.20 +                # Text similarity weight
-    all_kw_overlap['match_rate'] * 0.10    # All keywords weight
-)
-```
 
 
 
