@@ -1,4 +1,4 @@
-# AT## Features
+# ATS Features
 
 - 📄 **PDF Text Extraction**: Extract text from PDF resumes
 - 🔍 **CV Format Detection**: Analyze resume structure, sections, and ATS compatibility
