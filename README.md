@@ -214,13 +214,6 @@ Run examples:
 python example.py
 ```
 
-## Use Cases
-
-- 📝 **Job Seekers**: Optimize your resume for specific job descriptions
-- 🏢 **Recruiters**: Quickly screen candidates against job requirements
-- 💼 **Career Coaches**: Help clients improve their resumes
-- 🤖 **ATS Systems**: Build automated candidate screening tools
-
 ## Requirements
 
 - Python 3.8+
