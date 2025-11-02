@@ -54,35 +54,6 @@ Then open your browser and:
 3. Click "Analyze Resume"
 4. View your match score and recommendations!
 
-### 💻 Command Line Usage
-
-**Full Analysis (Resume + Job Match):**
-```bash
-python ats_pipeline.py "resume.pdf" "job_description.txt"
-```
-
-**CV Format Analysis Only:**
-```bash
-python cv_format_analyzer.py "resume.pdf"
-```
-
-**Extract Resume Sections:**
-```bash
-python section_extractor.py "resume.pdf"
-```
-This extracts structured content from each section (Experience, Skills, Education, etc.)
-
-**Extract Languages:**
-```bash
-python language_extractor.py "resume.pdf"
-```
-This extracts language information including proficiency levels
-
-**Note:** In PowerShell, use quotes around paths with special characters:
-```powershell
-python ats_pipeline.py "path\with&special\chars.pdf" "job_description.txt"
-```
-
 ### 🐍 Python API Usage
 
 ```python
